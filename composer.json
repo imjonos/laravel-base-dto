@@ -1,0 +1,35 @@
+{
+    "name": "imjonos/laravel-base-dto",
+    "description": "Laravel base DTO",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eugeny Nosenko",
+            "email": "info@toprogram.ru",
+            "homepage": "https://toprogram.ru"
+        }
+    ],
+    "homepage": "https://github.com/imjonos/laravel-base-dto",
+    "keywords": [
+        "Laravel",
+        "DTO"
+    ],
+    "require": {
+        "illuminate/support": "~5|~6|~7|~8|~9|~10|~11|~12|~13",
+    },
+    "autoload": {
+        "psr-4": {
+            "Nos\\BaseDto\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+            ]
+        }
+    }
+}

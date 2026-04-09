@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits\DataTransforms;
+namespace Nos\BaseDto\Traits\DataTransforms;
 
 /**
  * @method static fromArray(mixed $data)

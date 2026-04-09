@@ -1,15 +1,15 @@
-# 📦 Laravel Base Service
+# 📦 Laravel Base DTO
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/imjonos/laravel-base-service.svg?style=flat-square)](https://packagist.org/packages/imjonos/laravel-base-service)  
-[![Total Downloads](https://img.shields.io/packagist/dt/imjonos/laravel-base-service.svg?style=flat-square)](https://packagist.org/packages/imjonos/laravel-base-service)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/imjonos/laravel-base-dto.svg?style=flat-square)](https://packagist.org/packages/imjonos/laravel-base-dto)  
+[![Total Downloads](https://img.shields.io/packagist/dt/imjonos/laravel-base-dto.svg?style=flat-square)](https://packagist.org/packages/imjonos/laravel-base-dto)
 
-A **generic base service class** for Laravel projects that provides a consistent and reusable way to handle business logic and data access. It integrates with `laravel-base-repository` and simplifies working with Eloquent models by encapsulating common operations like create, read, update, delete (CRUD), pagination, and more.
+A **generic base DTO (Data Transfer Object) implementation** for Laravel projects that provides a consistent and reusable way to handle data transformation and transfer between application layers. This package offers abstract classes and interfaces for creating DTOs and DTO collections with support for array and JSON transformations.
 
 ---
 
 ## 🧩 Overview
 
-This package provides an abstract `BaseService` class that wraps around a repository and offers a clean interface for handling business logic in a structured and testable way. It is designed to be used in conjunction with the `laravel-base-repository` package, but it can also work with any custom repository implementing the required interface.
+This package provides a complete DTO (Data Transfer Object) implementation for Laravel applications. It includes abstract classes and interfaces for creating DTOs and DTO collections with built-in support for data transformation between array and JSON formats. The implementation follows SOLID principles and provides a consistent way to handle data transfer between different layers of your application.
 
 ---
 
@@ -18,80 +18,101 @@ This package provides an abstract `BaseService` class that wraps around a reposi
 Install the package via Composer:
 
 ```bash
-composer require imjonos/laravel-base-service
+composer require imjonos/laravel-base-dto
 ```
-
-> ✅ This package depends on `imjonos/laravel-base-repository`. Make sure it is installed in your project as well.
 
 ---
 
 ## ✅ Usage
 
-### 1. Create Your Service Class
+### 1. Create Your DTO Class
 
-Create a new service class that extends `BaseService` and specifies the repository class:
+Create a new DTO class that extends the base DTO functionality. You can use the provided traits for data transformation:
 
 ```php
-namespace App\Services;
+namespace App\DTO;
 
-use App\Repositories\OrderRepository;
-use Nos\BaseService\BaseService;
+use Nos\BaseDto\DTOCollection;
+use Nos\BaseDto\Interfaces\DtoInterface;
 
-class OrderService extends BaseService
+class UserDTO implements DtoInterface
 {
-    protected string $repositoryClass = OrderRepository::class;
+    use \Nos\BaseDto\Traits\DataTransforms\ArrayDataTransformable;
+    use \Nos\BaseDto\Traits\DataTransforms\JsonDataTransformable;
+    
+    public function __construct(
+        public string $name,
+        public string $email,
+        public \DateTimeInterface $createdAt
+    ) {}
 }
 ```
 
-### 2. Use the Service in a Controller or Other Logic
+### 2. Create Your DTO Collection
 
-Inject the service and use its methods:
+Create a collection class for your DTOs:
 
 ```php
-namespace App\Http\Controllers;
+namespace App\DTO;
 
-use App\Services\OrderService;
-use Illuminate\Http\Request;
+use Nos\BaseDto\DTOCollection;
 
-class OrderController extends Controller
+class UserCollection extends DTOCollection
 {
-    protected $orderService;
-
-    public function __construct(OrderService $orderService)
+    protected function createDTO(array $array): UserDTO
     {
-        $this->orderService = $orderService;
-    }
-
-    public function index()
-    {
-        $orders = $this->orderService->all();
-        return view('orders.index', compact('orders'));
-    }
-
-    public function store(Request $request)
-    {
-        $order = $this->orderService->create($request->all());
-        return redirect()->route('orders.show', $order->id);
+        return new UserDTO(
+            $array['name'],
+            $array['email'],
+            new \DateTime($array['created_at'])
+        );
     }
 }
+```
+
+### 3. Use DTOs in Your Application
+
+Transform data between different formats:
+
+```php
+// Create DTO from array
+$userData = [
+    'name' => 'John Doe',
+    'email' => 'john@example.com',
+    'created_at' => '2023-01-01 12:00:00'
+];
+$userDTO = UserDTO::fromArray($userData);
+
+// Convert DTO to array
+$array = $userDTO->toArray();
+
+// Convert DTO to JSON
+$json = $userDTO->toJson();
+
+// Work with collections
+$users = UserCollection::fromArray([$userData, $userData]);
+$users->each(fn ($user) => echo $user->name);
 ```
 
 ---
 
-## 🔧 Available Methods
+## 🔧 Available Features
 
-| Method | Description |
-|--------|-------------|
-| `getRepository()` | Returns the repository instance |
-| `all()` | Get all records |
-| `count()` | Count all records |
-| `find(int $modelId)` | Find a record by ID |
-| `exists(int $modelId)` | Check if a record exists |
-| `create(array $data)` | Create a new record (throws exception on failure) |
-| `update(int $modelId, array $data)` | Update a record by ID |
-| `delete(int $modelId)` | Delete a record by ID |
-| `updateOrCreate(array $attributes, array $data)` | Update or create a record |
-| `paginate(int $pageNumber, int $pageSize, callable $builderCallback)` | Paginate results with optional query builder callback |
+### DTO Interface
+- `fromArray(array $data)`: Create DTO instance from array data
+- `toArray()`: Convert DTO to array format
+- `fromJson(string $json)`: Create DTO instance from JSON string
+- `toJson()`: Convert DTO to JSON string
+
+### DTO Collection
+- Implements `Iterator` and `Countable` interfaces
+- `fromArray(array $data)`: Create collection from array data
+- `map(callable $callback)`: Transform collection items
+- `each(callable $callback)`: Iterate through collection items
+- `filter(callable $callback)`: Filter collection items
+- `findBy(callable $callback)`: Find first item matching criteria
+- `findByKey(int $key)`: Find item by index/key
+- `findByKeyAndValue(string $key, string $value)`: Find item by property value
 
 ---
 
@@ -100,9 +121,20 @@ class OrderController extends Controller
 ```
 vendor/
 └── imjonos/
-    └── laravel-base-service/
+    └── laravel-base-dto/
         ├── src/
-        │   └── BaseService.php
+        │   ├── DTOCollection.php
+        │   ├── Interfaces/
+        │   │   ├── CollectionInterface.php
+        │   │   ├── DtoCollectionInterface.php
+        │   │   ├── DtoInterface.php
+        │   │   └── DataTransforms/
+        │   │       ├── ArrayDataTransforms.php
+        │   │       └── JsonDataTransforms.php
+        │   └── Traits/
+        │       └── DataTransforms/
+        │           ├── ArrayDataTransformable.php
+        │           └── JsonDataTransformable.php
 ```
 
 ---
@@ -111,12 +143,13 @@ vendor/
 
 - PHP 8.0+
 - Laravel 9+
+- PHP Reflection extension (for property introspection)
 
 ---
 
 ## 🧪 Testing
 
-You can easily mock the service and its repository in your tests, which helps keep your application logic decoupled and improves test coverage.
+DTOs are easy to test as they are simple data objects. You can write unit tests to verify data transformation methods and collection operations. The immutability and pure functions in DTOs make them predictable and reliable in tests.
 
 ---
 
@@ -130,3 +163,11 @@ Please see the [license file](license.md) for more information.
 ## 🚀 Contributing
 
 Please see [contributing.md](contributing.md) for details and a todolist.
+
+## 🌟 Features
+
+- **Type Safety**: Uses PHP generics (via PHPDoc) for better IDE support and type checking
+- **Data Transformation**: Built-in support for array and JSON transformations
+- **Collection Operations**: Full-featured collection class with iterator support
+- **Extensible Design**: Easy to extend with custom transformation logic
+- **Framework Agnostic Core**: While designed for Laravel, the core DTO functionality can be used in any PHP project

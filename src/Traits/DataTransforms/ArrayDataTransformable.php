@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits\DataTransforms;
+namespace Nos\BaseDto\Traits\DataTransforms;
 
 use DateTimeInterface;
 use ReflectionClass;

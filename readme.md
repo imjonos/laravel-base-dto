@@ -27,23 +27,32 @@ composer require imjonos/laravel-base-dto
 
 ### 1. Create Your DTO Class
 
-Create a new DTO class that extends the base DTO functionality. You can use the provided traits for data transformation:
+Create a new DTO class that implements DtoInterface and uses the provided traits for data transformation. Here's a complete example:
 
 ```php
 namespace App\DTO;
 
 use Nos\BaseDto\Interfaces\DtoInterface;
+use Nos\BaseDto\Traits\DataTransforms\ArrayDataTransformable;
 
-class UserDTO implements DtoInterface
+final class UserDTO implements DtoInterface
 {
-    use \Nos\BaseDto\Traits\DataTransforms\ArrayDataTransformable;
-    use \Nos\BaseDto\Traits\DataTransforms\JsonDataTransformable;
-    
-    public function __construct(
+    use ArrayDataTransformable;
+
+    private function __construct(
         public string $name,
-        public string $email,
-        public \DateTimeInterface $createdAt
+        public string $code,
+        public int $numCode,
+        public float $rate,
     ) {}
+
+    public static function fromArray(array $data): self
+    {
+        return new UserDTO(
+            $data['name'] ?? '',
+            $data['email'] ?? '',
+        );
+    }
 }
 ```
 
@@ -60,11 +69,7 @@ class UserCollection extends DTOCollection
 {
     protected function createDTO(array $array): UserDTO
     {
-        return new UserDTO(
-            $array['name'],
-            $array['email'],
-            new \DateTime($array['created_at'])
-        );
+        return UserDTO::fromArray($array);
     }
 }
 ```

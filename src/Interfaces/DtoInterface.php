@@ -2,7 +2,7 @@
 
 namespace Nos\BaseDto\Interfaces;
 
-use Nos\BaseDto\Interfaces\ArrayDataTransforms;
+use Nos\BaseDto\Interfaces\DataTransforms\ArrayDataTransforms;
 
 interface DtoInterface extends ArrayDataTransforms
 {

@@ -32,7 +32,6 @@ Create a new DTO class that extends the base DTO functionality. You can use the 
 ```php
 namespace App\DTO;
 
-use Nos\BaseDto\DTOCollection;
 use Nos\BaseDto\Interfaces\DtoInterface;
 
 class UserDTO implements DtoInterface
